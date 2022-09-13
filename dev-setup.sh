@@ -43,8 +43,13 @@ else
 	exit 1
 fi
 
-# Backup the shell config
-cat $SHELLRC > "$SHELLRC.orig.$(date "+%Y%m%d%H%M%S")"
+if [ ! -f $SHELLRC ]; then
+	# Create the shell rc file if it doesn't exist
+	touch $SHELLRC
+else 
+	# Backup the shell config
+	cat $SHELLRC > "$SHELLRC.orig.$(date "+%Y%m%d%H%M%S")"
+fi
 
 ###############################################################
 # Homebrew
@@ -54,15 +59,15 @@ if ! which brew > /dev/null; then
 
 	/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
+	# Add /opt/homebrew/bin to $PATH if it's not there already
+	if ! grep -E "PATH=.*?\/opt\/homebrew\/bin" $SHELLRC > /dev/null; then
+		echo 'export PATH="/opt/homebrew/bin:$PATH"' >> $SHELLRC
+		source $SHELLRC
+	fi
+
 	if ! which brew > /dev/null; then
 		error "Homebrew installation failed!"
 		exit 1
-	fi
-
-	# Add /opt/homebrew/bin to $PATH if it's not there already
-	if ! grep -E "PATH=.*?\/opt\/homebrew\/bin" $SHELLRC > /dev/null; then
-		echo 'export PATH="/opt/homebrew/bin:$PATH' >> $SHELLRC
-		source $SHELLRC
 	fi
 else
 	info "Homebrew is already installed."
