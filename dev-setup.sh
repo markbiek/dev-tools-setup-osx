@@ -53,11 +53,15 @@ fi
 
 ###############################################################
 # Homebrew
-if ! which brew > /dev/null; then
+BREW_PATH=/opt/homebrew/bin/brew
+if [ ! -f $BREW_PATH ]; then
 	info "Installing Homebrew (https://brew.sh/)"
 	info "Enter your password when prompted. Accept the defaults at all other prompts."
 
 	/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+	# Temporarily add homebrew to the path so the script can keep running
+	export PATH="/opt/homebrew/bin:$PATH"
 
 	# Add /opt/homebrew/bin to $PATH if it's not there already
 	if ! grep -E "PATH=.*?\/opt\/homebrew\/bin" $SHELLRC > /dev/null; then
@@ -65,7 +69,7 @@ if ! which brew > /dev/null; then
 		source $SHELLRC
 	fi
 
-	if ! which brew > /dev/null; then
+	if [ ! -f $BREW_PATH ]; then
 		error "Homebrew installation failed!"
 		exit 1
 	fi
@@ -78,7 +82,7 @@ fi
 if ! which git > /dev/null; then
 	info "Installing git"
 
-	brew install git
+	$BREW_PATH install git
 
 	if ! which git > /dev/null; then
 		error "git installation failed!"
@@ -99,7 +103,7 @@ if [[ $HAS_FNM != 0 && $HAS_NVM != 0 ]]; then
 	# If we don't have fnm or nvm, default to fnm
 	info "Installing fnm"
 
-	brew install fnm
+	$BREW_PATH install fnm
 
 	if ! which fnm > /dev/null; then
 		error "fnm installation failed!"
@@ -148,3 +152,5 @@ if ! which yarn > /dev/null; then
 else
 	info "yarn is already installed."
 fi
+
+success "Success:  Dev tools installation is complete"
